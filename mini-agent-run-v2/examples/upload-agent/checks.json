@@ -1,0 +1,80 @@
+[
+  {
+    "name": "逆序完成",
+    "file": "src/dispatch.ts",
+    "fn": "collect",
+    "args": [
+      [
+        "call_A",
+        "call_B"
+      ],
+      [
+        {
+          "id": "call_B",
+          "value": "call_B reply"
+        },
+        {
+          "id": "call_A",
+          "value": "call_A reply"
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "role": "tool",
+        "tool_call_id": "call_B",
+        "content": "call_B reply"
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "call_A",
+        "content": "call_A reply"
+      }
+    ]
+  },
+  {
+    "name": "按序完成",
+    "file": "src/dispatch.ts",
+    "fn": "collect",
+    "args": [
+      [
+        "first",
+        "second"
+      ],
+      [
+        {
+          "id": "first",
+          "value": "first reply"
+        },
+        {
+          "id": "second",
+          "value": "second reply"
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "role": "tool",
+        "tool_call_id": "first",
+        "content": "first reply"
+      },
+      {
+        "role": "tool",
+        "tool_call_id": "second",
+        "content": "second reply"
+      }
+    ]
+  },
+  {
+    "name": "无已完成调用",
+    "file": "src/dispatch.ts",
+    "fn": "collect",
+    "args": [
+      [
+        "wait"
+      ],
+      []
+    ],
+    "expected": []
+  }
+]

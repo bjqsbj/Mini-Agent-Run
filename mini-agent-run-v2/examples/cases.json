@@ -1,0 +1,425 @@
+[
+  {
+    "id": "gateway-port",
+    "title": "启动时连接了旧端口",
+    "scene": "boot",
+    "question": "启动 Agent 时网关连接 db.local:5433 被拒绝。注册中心已经切到 5432，请修正连接参数选择并保留未注册时的回退。",
+    "files": [
+      {
+        "path": "src/gateway.ts",
+        "content": "export function selectPort(configured: number, registered: number | null) {\n  return configured || registered\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [5433, 5432],
+        "expected": 5432
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6543, null],
+        "expected": 6543
+      },
+      {
+        "name": "边界输入",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6432, 7432],
+        "expected": 7432
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/gateway.ts",
+        "before": "configured || registered",
+        "after": "registered ?? configured"
+      }
+    ],
+    "expected": "published",
+    "method": "比较每个输入在修改前后的实际返回值。全部通过后下载修复版本，回滚后核对原始源码。"
+  },
+  {
+    "id": "sync-timeout",
+    "title": "同步在 87% 耗尽重试",
+    "scene": "sync",
+    "question": "同步检查点停在 87%。上游响应 7800ms，设置的 8 秒超时却只给了 2000ms。修正秒转毫秒并核对默认值。",
+    "files": [
+      {
+        "path": "src/sync.ts",
+        "content": "export function deadlineMs(seconds: number = 2) {\n  return Math.max(2000, seconds)\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/sync.ts",
+        "fn": "deadlineMs",
+        "args": [8],
+        "expected": 8000
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/sync.ts",
+        "fn": "deadlineMs",
+        "args": [],
+        "expected": 2000
+      },
+      {
+        "name": "边界输入",
+        "file": "src/sync.ts",
+        "fn": "deadlineMs",
+        "args": [0.5],
+        "expected": 2000
+      },
+      {
+        "name": "附加回归",
+        "file": "src/sync.ts",
+        "fn": "deadlineMs",
+        "args": [2.5],
+        "expected": 2500
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/sync.ts",
+        "before": "Math.max(2000, seconds)",
+        "after": "Math.max(2000, seconds * 1000)"
+      }
+    ],
+    "expected": "published",
+    "method": "比较每个输入在修改前后的实际返回值。全部通过后下载修复版本，回滚后核对原始源码。"
+  },
+  {
+    "id": "export-space",
+    "title": "导出在归档阶段耗尽磁盘",
+    "scene": "export",
+    "question": "EX-204 在剩 8 MiB 时仍开始写 64 MiB 的归档，最终 ENOSPC。修正导出前的容量判断，并核对容量刚好满足的边界。",
+    "files": [
+      {
+        "path": "src/exporter.ts",
+        "content": "export function canArchive(freeMiB: number, requiredMiB: number) {\n  return freeMiB > 0\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [8, 64],
+        "expected": false
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [64, 64],
+        "expected": true
+      },
+      {
+        "name": "边界输入",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [128, 64],
+        "expected": true
+      },
+      {
+        "name": "附加回归",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [0, 64],
+        "expected": false
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/exporter.ts",
+        "before": "freeMiB > 0",
+        "after": "freeMiB >= requiredMiB"
+      }
+    ],
+    "expected": "published",
+    "method": "比较每个输入在修改前后的实际返回值。全部通过后下载修复版本，回滚后核对原始源码。"
+  },
+  {
+    "id": "vague",
+    "title": "主观体验反馈",
+    "scene": "boot",
+    "question": "我觉得Agent不好用",
+    "files": [
+      {
+        "path": "src/gateway.ts",
+        "content": "export function selectPort(configured: number, registered: number | null) {\n  return configured || registered\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [5433, 5432],
+        "expected": 5432
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6543, null],
+        "expected": 6543
+      },
+      {
+        "name": "边界输入",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6432, 7432],
+        "expected": 7432
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/gateway.ts",
+        "before": "configured || registered",
+        "after": "registered ?? configured"
+      }
+    ],
+    "expected": "clarify",
+    "method": "应提示补充复现步骤，无工具调用与代码变更。"
+  },
+  {
+    "id": "unrelated",
+    "title": "无关数学请求",
+    "scene": "boot",
+    "question": "请解方程 2x + 5 = 13",
+    "files": [
+      {
+        "path": "src/gateway.ts",
+        "content": "export function selectPort(configured: number, registered: number | null) {\n  return configured || registered\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [5433, 5432],
+        "expected": 5432
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6543, null],
+        "expected": 6543
+      },
+      {
+        "name": "边界输入",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6432, 7432],
+        "expected": 7432
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/gateway.ts",
+        "before": "configured || registered",
+        "after": "registered ?? configured"
+      }
+    ],
+    "expected": "reject",
+    "method": "应结束为无关请求，版本列表仅含原始版本。"
+  },
+  {
+    "id": "regression",
+    "title": "候选遗漏等值边界",
+    "scene": "export",
+    "question": "EX-204 在剩 8 MiB 时仍开始写 64 MiB 的归档，最终 ENOSPC。修正导出前的容量判断，并核对容量刚好满足的边界。",
+    "files": [
+      {
+        "path": "src/exporter.ts",
+        "content": "export function canArchive(freeMiB: number, requiredMiB: number) {\n  return freeMiB > 0\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [8, 64],
+        "expected": false
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [64, 64],
+        "expected": true
+      },
+      {
+        "name": "边界输入",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [128, 64],
+        "expected": true
+      },
+      {
+        "name": "附加回归",
+        "file": "src/exporter.ts",
+        "fn": "canArchive",
+        "args": [0, 64],
+        "expected": false
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/exporter.ts",
+        "before": "freeMiB > 0",
+        "after": "freeMiB > requiredMiB"
+      }
+    ],
+    "expected": "failed",
+    "method": "离线注入只用大于号的候选。8/64 修复，但 64/64 回归，活动版本不变。"
+  },
+  {
+    "id": "healthy",
+    "title": "代码已修正",
+    "scene": "boot",
+    "question": "启动 Agent 时网关连接 db.local:5433 被拒绝。注册中心已经切到 5432，请修正连接参数选择并保留未注册时的回退。",
+    "files": [
+      {
+        "path": "src/gateway.ts",
+        "content": "export function selectPort(configured: number, registered: number | null) {\n  return registered ?? configured\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "复现反馈",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [5433, 5432],
+        "expected": 5432
+      },
+      {
+        "name": "保留正常行为",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6543, null],
+        "expected": 6543
+      },
+      {
+        "name": "边界输入",
+        "file": "src/gateway.ts",
+        "fn": "selectPort",
+        "args": [6432, 7432],
+        "expected": 7432
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/gateway.ts",
+        "before": "configured || registered",
+        "after": "registered ?? configured"
+      }
+    ],
+    "expected": "unchanged",
+    "method": "原始版本通过所有断言，运行结束时不增加修复版本。"
+  },
+  {
+    "id": "parallel-tools",
+    "title": "并行工具逆序返回时串线",
+    "scene": "agent",
+    "question": "我觉得 Agent 不好用：同时调用 read_state 和 list_jobs，后者先完成时 tool_call_id 被写成前者的，下一轮关联失败。请修复结果封装。",
+    "files": [
+      {
+        "path": "src/dispatch.ts",
+        "content": "import { toolMessage } from './message.js'\n\nexport function collect(pending: string[], completed: {id: string, value: string}[]) {\n  return completed.map((event, index) => toolMessage(pending[index], event.value))\n}\n"
+      },
+      {
+        "path": "src/message.ts",
+        "content": "export function toolMessage(id: string, content: string) {\n  return { role: 'tool', tool_call_id: id, content }\n}\n"
+      }
+    ],
+    "checks": [
+      {
+        "name": "逆序完成",
+        "file": "src/dispatch.ts",
+        "fn": "collect",
+        "args": [
+          ["call_A", "call_B"],
+          [
+            {
+              "id": "call_B",
+              "value": "call_B reply"
+            },
+            {
+              "id": "call_A",
+              "value": "call_A reply"
+            }
+          ]
+        ],
+        "expected": [
+          {
+            "role": "tool",
+            "tool_call_id": "call_B",
+            "content": "call_B reply"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "call_A",
+            "content": "call_A reply"
+          }
+        ]
+      },
+      {
+        "name": "按序完成",
+        "file": "src/dispatch.ts",
+        "fn": "collect",
+        "args": [
+          ["first", "second"],
+          [
+            {
+              "id": "first",
+              "value": "first reply"
+            },
+            {
+              "id": "second",
+              "value": "second reply"
+            }
+          ]
+        ],
+        "expected": [
+          {
+            "role": "tool",
+            "tool_call_id": "first",
+            "content": "first reply"
+          },
+          {
+            "role": "tool",
+            "tool_call_id": "second",
+            "content": "second reply"
+          }
+        ]
+      },
+      {
+        "name": "无已完成调用",
+        "file": "src/dispatch.ts",
+        "fn": "collect",
+        "args": [["wait"], []],
+        "expected": []
+      }
+    ],
+    "demoEdits": [
+      {
+        "path": "src/dispatch.ts",
+        "before": "pending[index]",
+        "after": "event.id"
+      }
+    ],
+    "expected": "published",
+    "method": "定位 agent 日志第 27 行。逆序完成时，每条结果的 tool_call_id 必须来自该完成事件；顺序返回与空完成队列也应通过。"
+  }
+]

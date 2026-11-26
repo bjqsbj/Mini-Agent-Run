@@ -1,0 +1,58 @@
+[
+  {
+    "id": "CASE-001",
+    "title": "工具结束后一直 Thinking",
+    "question": "我让 Agent 帮我分析项目代码，前面几个工具都已经执行完成了，但之后一直显示 Thinking，等待了好几分钟也没有任何输出。请帮我排查究竟是模型响应太慢、工具执行失败，还是 Agent 自身的运行状态出了问题。",
+    "file": "CASE-001-thinking.mjs",
+    "source": "openai/codex#24850"
+  },
+  {
+    "id": "CASE-002",
+    "title": "反复读取同一文件",
+    "question": "Agent 在执行代码分析任务时，一直重复调用 read_file 工具读取同一个文件，已经连续调用很多次了，但始终没有给出分析结果。请帮我定位是否存在 Agent Loop 设计问题，并给出修复建议。",
+    "file": "CASE-002-loop.mjs",
+    "source": "langchain-ai/langchain#26019"
+  },
+  {
+    "id": "CASE-003",
+    "title": "点击停止后仍有新输出",
+    "question": "我发现 Agent 执行任务时，点击停止按钮虽然会显示已停止，但过几秒之后它又开始输出新的内容，有时候还会继续调用工具和消耗 Token。请检查停止机制是否真正终止了后端任务。",
+    "file": "CASE-003-stop.mjs",
+    "source": "anthropics/claude-code#26802"
+  },
+  {
+    "id": "CASE-004",
+    "title": "流式工具参数缺失",
+    "question": "Agent 在搜索系统日志时频繁报错，提示工具缺少 service 和 keyword 参数。但从模型的输出看，它似乎已经生成了正确的参数。请排查工具调用参数是不是在流式传输或解析过程中出现了问题。",
+    "file": "CASE-004-arguments.mjs",
+    "source": "langchain-ai/langchainjs#8394、langchain-ai/langchain#35514"
+  },
+  {
+    "id": "CASE-005",
+    "title": "连续请求后频繁限流",
+    "question": "Agent 平时使用没有问题，但连续执行几个排查任务之后就会频繁报错。有时重试一下能恢复，有时会连续失败。请检查模型 API 的请求记录，判断是否存在接口限流、并发过高或者重试策略不合理的问题。",
+    "file": "CASE-005-rate-limit.mjs",
+    "source": "DeepSeek 官方 HTTP 429"
+  },
+  {
+    "id": "CASE-006",
+    "title": "大日志卡顿与上下文溢出",
+    "question": "使用 Agent 排查大型项目时，只要工具返回大量运行日志，整个页面就会出现严重卡顿，甚至无法点击停止按钮。继续执行后，内存和 Token 消耗也会明显增加。请帮我判断是不是日志渲染和上下文管理存在问题。",
+    "file": "CASE-006-large-log.mjs",
+    "source": "openai/codex#33822、#24048、#22091"
+  },
+  {
+    "id": "CASE-007",
+    "title": "重启后历史记录不完整",
+    "question": "昨天让 Agent 完成了一次比较长的故障排查，当时能够看到完整的执行过程和最终报告。但是今天重新打开软件后，历史任务只显示了部分内容，工具调用记录和最后的诊断报告都不见了。请检查是不是数据持久化或历史加载逻辑存在问题。",
+    "file": "CASE-007-history.mjs",
+    "source": "openai/codex#42311"
+  },
+  {
+    "id": "CASE-008",
+    "title": "MCP 重连后找不到工具",
+    "question": "Agent 原本可以通过 MCP 工具查询项目文件，但一次网络断开后，即使 MCP 服务已经重新显示连接成功，Agent 仍然提示找不到相关工具。只有重新创建会话才能恢复，请帮我排查原因。",
+    "file": "CASE-008-mcp.mjs",
+    "source": "anthropics/claude-code#38043"
+  }
+]
